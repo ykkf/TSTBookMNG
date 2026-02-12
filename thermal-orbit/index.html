@@ -976,7 +976,12 @@
                 if (match) publisherId = match.id;
             }
 
-            if (!title) return []; // No title found
+            // Fallback: If no title found via keyword, use the first line
+            if (!title && lines.length > 0) {
+                title = lines[0];
+            }
+
+            if (!title) return []; // Truly no text found
 
             return [{
                 id: Date.now().toString(),
