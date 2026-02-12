@@ -748,147 +748,43 @@
             setTimeout(() => { toast.classList.add('hidden'); }, 3000);
         }
 
-        // --- Camera Logic (var to avoid TDZ if script halts) ---
-        var videoStream = null;
-
-        function openCamera() {
-            navigateToScreen('screen-camera');
-            startCamera();
-        }
-
-        function closeCamera() {
-            stopCamera();
-            navigateToScreen('screen-home');
-        }
-
-        async function startCamera() {
-            const videoEl = document.getElementById('camera-feed');
-            if (!videoEl) {
-                console.error("Video element not found");
-                alert('エラー: カメラ画面の初期化に失敗しました。');
-                return;
+        // --- Delete & Reason Functions ---
+        function deleteDetailItem() {
+            if (!window.currentDetailId) { alert('削除対象がありません'); return; }
+            if (!confirm('このアイテムを削除しますか？')) return;
+            ensureState();
+            var idx = window.state.unpurchased.findIndex(function (i) { return i.id === window.currentDetailId; });
+            if (idx > -1) {
+                window.state.unpurchased.splice(idx, 1);
+            } else {
+                idx = window.state.purchased.findIndex(function (i) { return i.id === window.currentDetailId; });
+                if (idx > -1) window.state.purchased.splice(idx, 1);
             }
+            saveStateLocal();
+            renderHomeLocal();
+            closeDetailEdit();
+            showToast('削除しました');
+        }
 
-            try {
-                // Stop any existing stream first
-                stopCamera();
+        // Attach ALL to window
+        window.deleteDetailItem = deleteDetailItem;
 
-                videoStream = await navigator.mediaDevices.getUserMedia({
-                    video: { facingMode: 'environment' },
-                    audio: false
-                });
-                videoEl.srcObject = videoStream;
-            } catch (err) {
-                console.error("Camera Error:", err);
-                if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
-                    alert('カメラのアクセス権限がありません。\nブラウザの設定でカメラを許可してください。');
-                } else if (err.name === 'NotFoundError') {
-                    alert('カメラが見つかりません。');
-                } else {
-                    alert('カメラを起動できませんでした: ' + err.message);
+        // FORCE UNREGISTER SERVICE WORKER to fix caching issues
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.getRegistrations().then(function (registrations) {
+                for (let registration of registrations) {
+                    console.log('Unregistering SW:', registration);
+                    registration.unregister();
                 }
-                closeCamera();
-            }
+            });
         }
-
-        function stopCamera() {
-            if (videoStream) {
-                videoStream.getTracks().forEach(track => track.stop());
-                videoStream = null;
-            }
-        }
-
-        // --- OCR Pending Items (temporary before registration) ---
-        window.ocrPendingItems = [];
-
-        function takePicture() {
-            const btn = document.getElementById('btn-shutter');
-            if (btn) btn.style.backgroundColor = 'red';
-
-            setTimeout(() => {
-                if (btn) btn.style.backgroundColor = 'white';
-
-                if (videoStream) {
-                    // Capture frame from video
-                    const videoEl = document.getElementById('camera-feed');
-                    const canvas = document.createElement('canvas');
-                    canvas.width = videoEl.videoWidth || 640;
-                    canvas.height = videoEl.videoHeight || 480;
-                    canvas.getContext('2d').drawImage(videoEl, 0, 0);
-                    const dataUrl = canvas.toDataURL('image/png');
-                    stopCamera();
-                    processOCR(dataUrl);
-                } else {
-                    const fi = document.getElementById('camera-file-input');
-                    if (fi) fi.click();
-                }
-            }, 500);
-        }
-
-        function openGallery() {
-            const input = document.getElementById('camera-file-input');
-            if (input) {
-                input.removeAttribute('capture');
-                input.click();
-            }
-        }
-
-        function handleFileSelect(input) {
-            if (input.files && input.files[0]) {
-                const reader = new FileReader();
-                reader.onload = function (e) {
-                    processOCR(e.target.result);
-                };
-                reader.readAsDataURL(input.files[0]);
-            }
-            input.value = '';
-        }
-
-        // --- Image Pre-processing for OCR ---
-        function processImageForOCR(imageSource) {
-            return new Promise((resolve) => {
-                const img = new Image();
-                img.onload = () => {
-                    const canvas = document.createElement('canvas');
-                    const ctx = canvas.getContext('2d');
-
-                    // Resize to manageable size (max 1500px width/height)
-                    const maxDim = 1500;
-                    let width = img.width;
-                    let height = img.height;
-
-                    navigator.serviceWorker.register('./sw.js').then(reg => {
-                        reg.onupdatefound = () => {
-                            const installingWorker = reg.installing;
-                            installingWorker.onstatechange = () => {
-                                if (installingWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                                    window.location.reload();
-                                }
-                            };
-                        };
-                    });
-                    navigator.serviceWorker.addEventListener('controllerchange', () => {
-                        window.location.reload();
-                    });
-                }
-                // FORCE UNREGISTER SERVICE WORKER to fix caching issues
-                if ('serviceWorker' in navigator) {
-                    navigator.serviceWorker.getRegistrations().then(function (registrations) {
-                        for (let registration of registrations) {
-                            console.log('Unregistering SW:', registration);
-                            registration.unregister();
-                        }
-                    });
-                }
     </script>
 
 <body>
 
     <!-- App Container -->
     <div id="app">
-        <!-- Hidden File Input for Gallery/Camera Fallback -->
-        <input type="file" id="camera-file-input" accept="image/*" style="display: none;"
-            onchange="handleFileSelect(this)">
+
 
         <!-- Header -->
         <header>
