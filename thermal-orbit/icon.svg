@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <rect width="512" height="512" rx="100" fill="#6200ee"/>
+  <!-- Book Shape -->
+  <path d="M140 130 h232 c10 0 20 10 20 20 v232 c0 10 -10 20 -20 20 h-232 c-10 0 -20 -10 -20 -20 v-232 c0 -10 10 -20 20 -20 z" fill="white"/>
+  <!-- Checkmark -->
+  <path d="M200 256 l40 40 l80 -80" fill="none" stroke="#6200ee" stroke-width="30" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- Spine/Detail -->
+  <rect x="120" y="130" width="20" height="272" fill="#4d00d2" rx="5"/>
+</svg>

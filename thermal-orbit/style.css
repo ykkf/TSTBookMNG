@@ -1,0 +1,464 @@
+:root {
+    --primary-color: #6200ee;
+    --accent-color: #03dac6;
+    --bg-color: #f5f5f5;
+    --card-bg: #ffffff;
+    --text-color: #333333;
+    --subtext-color: #666666;
+    --border-color: #e0e0e0;
+    --danger-color: #b00020;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+body {
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    height: 100vh;
+    overflow: hidden;
+    /* Prevent body scroll, handle in main */
+}
+
+#app {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    position: relative;
+    max-width: 480px;
+    /* Mobile width cap for desktop viewing */
+    margin: 0 auto;
+    background-color: white;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+}
+
+/* Header */
+header {
+    height: 56px;
+    background-color: var(--primary-color);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 16px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    z-index: 10;
+}
+
+h1 {
+    font-size: 20px;
+    font-weight: 500;
+}
+
+.icon-btn {
+    background: none;
+    border: none;
+    color: white;
+    cursor: pointer;
+    padding: 8px;
+}
+
+/* Main Content */
+main {
+    flex: 1;
+    overflow: hidden;
+    position: relative;
+}
+
+.screen {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: var(--bg-color);
+    transform: translateX(100%);
+    transition: transform 0.3s ease-in-out;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+}
+
+.screen.active {
+    transform: translateX(0);
+}
+
+/* Tabs */
+.tabs {
+    display: flex;
+    background-color: var(--primary-color);
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.tab {
+    flex: 1;
+    padding: 12px;
+    text-align: center;
+    background: none;
+    border: none;
+    color: inherit;
+    border-bottom: 2px solid transparent;
+    cursor: pointer;
+    font-weight: 500;
+}
+
+.tab.active {
+    color: white;
+    border-bottom-color: var(--accent-color);
+}
+
+/* Lists */
+.comic-list,
+.edit-list {
+    padding: 16px;
+    padding-bottom: 80px;
+    /* Space for FAB */
+}
+
+.hidden {
+    display: none !important;
+}
+
+/* Card UI */
+.card {
+    background-color: var(--card-bg);
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 12px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.card-info {
+    flex: 1;
+}
+
+.card-title {
+    font-size: 16px;
+    font-weight: bold;
+    margin-bottom: 4px;
+}
+
+.publisher-icon {
+    width: 20px;
+    height: 20px;
+    border-radius: 4px;
+    display: inline-block;
+    vertical-align: middle;
+    margin-right: 6px;
+    background-color: #ccc;
+    /* Placeholder */
+    text-align: center;
+    line-height: 20px;
+    font-size: 10px;
+    color: white;
+    font-weight: bold;
+}
+
+.publisher-icon.shueisha {
+    background-color: #e50012;
+}
+
+/* Red */
+.publisher-icon.kodansha {
+    background-color: #0097a7;
+}
+
+/* Cyan-ish */
+.publisher-icon.shogakukan {
+    background-color: #ffeb3b;
+    color: black;
+}
+
+/* Yellow */
+.publisher-icon.kadokawa {
+    background-color: #1a237e;
+}
+
+/* Dark Blue */
+.publisher-icon.other {
+    background-color: #9e9e9e;
+}
+
+.card-vol {
+    font-size: 14px;
+    color: var(--subtext-color);
+    display: inline-block;
+    background: #eee;
+    padding: 2px 6px;
+    border-radius: 4px;
+    margin-right: 8px;
+}
+
+.card-reason {
+    font-size: 12px;
+    color: var(--danger-color);
+}
+
+.card-actions {
+    display: flex;
+    align-items: center;
+}
+
+.checkbox {
+    width: 24px;
+    height: 24px;
+    border: 2px solid var(--subtext-color);
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+
+.checkbox.checked {
+    background-color: var(--accent-color);
+    border-color: var(--accent-color);
+    color: white;
+}
+
+/* FAB */
+.fab {
+    position: absolute;
+    bottom: 24px;
+    right: 24px;
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background-color: var(--accent-color);
+    color: black;
+    border: none;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 20;
+}
+
+/* Camera Screen */
+#screen-camera {
+    background-color: black;
+    display: flex;
+    flex-direction: column;
+}
+
+.camera-view {
+    flex: 1;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.camera-placeholder {
+    color: #555;
+    text-align: center;
+}
+
+.camera-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.guide-frame {
+    width: 70%;
+    height: 50%;
+    border: 2px dashed rgba(255, 255, 255, 0.5);
+    border-radius: 8px;
+}
+
+/* Modal */
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+}
+
+#modal-publisher,
+#modal-author {
+    z-index: 200;
+}
+
+.modal-content {
+    background-color: white;
+    width: 90%;
+    max-width: 320px;
+    max-height: 90vh;
+    /* Ensure it fits on screen */
+    overflow-y: auto;
+    /* Scroll if too tall */
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.camera-controls {
+    height: 120px;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    padding: 20px;
+    position: relative;
+    z-index: 50;
+    /* Ensure on top of video */
+}
+
+.shutter-btn {
+    width: 72px;
+    height: 72px;
+    border-radius: 50%;
+    background-color: white;
+    border: 4px solid rgba(0, 0, 0, 0.2);
+}
+
+/* OCR Edit Card */
+.edit-card {
+    background: white;
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 16px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.input-group {
+    margin-bottom: 12px;
+}
+
+.input-label {
+    font-size: 12px;
+    color: var(--subtext-color);
+    margin-bottom: 4px;
+    display: block;
+}
+
+.text-input {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    font-size: 16px;
+}
+
+.ai-chips {
+    display: flex;
+    overflow-x: auto;
+    gap: 8px;
+    margin-top: 8px;
+    padding-bottom: 4px;
+}
+
+.chip {
+    background-color: #e3f2fd;
+    color: #1976d2;
+    padding: 6px 12px;
+    border-radius: 16px;
+    font-size: 13px;
+    white-space: nowrap;
+    border: none;
+    cursor: pointer;
+}
+
+.edit-actions {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 16px;
+    border-top: 1px solid #f0f0f0;
+    padding-top: 12px;
+}
+
+.btn-flat {
+    background: none;
+    border: none;
+    padding: 8px 16px;
+    font-weight: 500;
+    cursor: pointer;
+}
+
+.text-danger {
+    color: var(--danger-color);
+}
+
+.text-primary {
+    color: var(--primary-color);
+}
+
+.reason-btn {
+    padding: 10px;
+    border: 1px solid var(--border-color);
+    background: white;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.reason-btn.selected {
+    background-color: var(--primary-color);
+    color: white;
+    border-color: var(--primary-color);
+}
+
+textarea {
+    width: 100%;
+    height: 60px;
+    padding: 8px;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    resize: none;
+}
+
+.modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 16px;
+}
+
+.primary {
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+}
+
+/* Detail Edit Screen */
+.edit-container {
+    padding: 24px 16px;
+}
+
+
+
+.toast {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: #333;
+    color: white;
+    padding: 12px 24px;
+    border-radius: 24px;
+    font-size: 14px;
+    z-index: 200;
+    opacity: 0.9;
+}
