@@ -1,4 +1,4 @@
-const CACHE_NAME = 'manga-manager-v42';
+const CACHE_NAME = 'manga-manager-v43';
 const ASSETS = [
     './',
     './index.html',

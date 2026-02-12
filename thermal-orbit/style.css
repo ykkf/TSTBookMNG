@@ -249,14 +249,6 @@ main {
     flex-direction: column;
 }
 
-.camera-view {
-    flex: 1;
-    position: relative;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
 .camera-placeholder {
     color: #555;
     text-align: center;
@@ -311,18 +303,6 @@ main {
     border-radius: 8px;
     padding: 20px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-}
-
-.camera-controls {
-    height: 120px;
-    background-color: rgba(0, 0, 0, 0.5);
-    display: flex;
-    align-items: center;
-    justify-content: space-around;
-    padding: 20px;
-    position: relative;
-    z-index: 50;
-    /* Ensure on top of video */
 }
 
 .shutter-btn {

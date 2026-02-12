@@ -12,8 +12,7 @@
     <link rel="icon" href="icon.svg" type="image/svg+xml">
     <link rel="apple-touch-icon" href="icon.svg">
     <meta name="theme-color" content="#6200ee">
-    <!-- Tesseract.js for OCR -->
-    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+
     <script>
         // Emergency Inline Script for Settings & Manual Add
         // This ensures these functions exist even if app.js fails to load or update immediately.
@@ -858,422 +857,29 @@
                     let width = img.width;
                     let height = img.height;
 
-                    if (width > height) {
-                        if (width > maxDim) {
-                            height = Math.round(height * (maxDim / width));
-                            width = maxDim;
-                        }
-                    } else {
-                        if (height > maxDim) {
-                            width = Math.round(width * (maxDim / height));
-                            height = maxDim;
-                        }
-                    }
-
-                    canvas.width = width;
-                    canvas.height = height;
-
-                    // Draw image
-                    ctx.drawImage(img, 0, 0, width, height);
-
-                    // Get raw pixel data
-                    const imageData = ctx.getImageData(0, 0, width, height);
-                    const data = imageData.data;
-
-                    // Convert to Grayscale & Binarize (Simple Threshold)
-                    // Threshold value: 128 is standard, maybe adaptive is better but complex.
-                    // Let's try high contrast grayscale first.
-                    for (let i = 0; i < data.length; i += 4) {
-                        const r = data[i];
-                        const g = data[i + 1];
-                        const b = data[i + 2];
-
-                        // Grayscale (Luminance)
-                        const gray = 0.299 * r + 0.587 * g + 0.114 * b;
-
-                        // Binarization (Threshold 100 - stricter for text on white?)
-                        // Or just Contrast enhancement:
-                        // val = (val - 128) * contrast + 128
-
-                        // Simple Thresholding for text extraction
-                        // If darker than 140 -> 0 (Black), else -> 255 (White)
-                        // This helps clean up noise but might lose faint text.
-                        // Let's use a "soft" binarization or just high contrast grayscale.
-                        // Actually Tesseract handles grayscale well. Let's just do Grayscale + Contrast.
-
-                        let val = gray;
-                        // Increase contrast
-                        const contrast = 1.5; // 50% more contrast
-                        val = ((val - 128) * contrast) + 128;
-
-                        // Clamp
-                        if (val < 0) val = 0;
-                        if (val > 255) val = 255;
-
-                        data[i] = val;     // R
-                        data[i + 1] = val; // G
-                        data[i + 2] = val; // B
-                        // Alpha remains 255
-                    }
-
-                    ctx.putImageData(imageData, 0, 0);
-                    resolve(canvas.toDataURL('image/png'));
-                };
-                img.onerror = () => resolve(imageSource); // Fallback to original
-                img.src = imageSource;
-            });
-        }
-
-        // --- OCR Processing with Tesseract.js ---
-        async function processOCR(imageSource) {
-            // Show loading overlay
-            showOcrLoading(true);
-            navigateToScreen('screen-home');
-
-            try {
-                // Reverted pre-processing as it worsened results for colored covers (v42)
-                // const processedImage = await processImageForOCR(imageSource);
-
-                // Reverted PSM to default (AUTO) as SPARSE_TEXT (11) might be skipping title
-                const result = await Tesseract.recognize(imageSource, 'jpn+eng', {
-                    // tessedit_pageseg_mode: Tesseract.PSM.SPARSE_TEXT, 
-                    logger: m => {
-                        if (m.status === 'recognizing text') {
-                            const pct = Math.round((m.progress || 0) * 100);
-                            const loadMsg = document.getElementById('ocr-loading-text');
-                            if (loadMsg) loadMsg.textContent = `読み取り中... ${pct}%`;
-                        }
-                    }
-                });
-
-                const rawText = result.data.text || '';
-                console.log('OCR Raw:', rawText);
-
-                // Parse lines into potential items
-                const items = parseOcrText(rawText);
-
-                if (items.length === 0) {
-                    showOcrLoading(false);
-                    if (rawText && rawText.trim().length > 0) {
-                        // This implies fallback failed even with text? Should be rare with current logic.
-                        showToast('解析できませんでした (文字数: ' + rawText.length + ')');
-                    } else {
-                        showToast('文字が見つかりませんでした。明るい場所で撮影してください。');
-                    }
-                    return;
-                }
-
-                // Store as pending and show edit screen
-                window.ocrPendingItems = items;
-                showOcrLoading(false);
-                renderOcrEditScreen();
-                navigateToScreen('screen-edit');
-            } catch (err) {
-                console.error('OCR Error:', err);
-                showOcrLoading(false);
-                showToast('OCR処理に失敗しました: ' + err.message);
-            }
-        }
-
-        function showOcrLoading(show) {
-            let overlay = document.getElementById('ocr-loading-overlay');
-            if (!overlay) {
-                overlay = document.createElement('div');
-                overlay.id = 'ocr-loading-overlay';
-                overlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.7);z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;';
-                overlay.innerHTML = `
-                    <div style="width:60px;height:60px;border:4px solid rgba(255,255,255,0.3);border-top-color:white;border-radius:50%;animation:spin 1s linear infinite;"></div>
-                    <p id="ocr-loading-text" style="color:white;font-size:18px;margin-top:16px;">読み取り中... 0%</p>
-                `;
-                document.body.appendChild(overlay);
-                // Add spin animation if not exists
-                if (!document.getElementById('spin-style')) {
-                    const style = document.createElement('style');
-                    style.id = 'spin-style';
-                    style.textContent = '@keyframes spin { to { transform: rotate(360deg); } }';
-                    document.head.appendChild(style);
-                }
-            }
-            overlay.style.display = show ? 'flex' : 'none';
-        }
-
-        // --- Parse OCR text into items (Multi-Line Mode) ---
-        function parseOcrText(rawText) {
-            ensureState();
-            // Split by newline and filter empty/short noise
-            const lines = rawText.split('\n')
-                .map(l => l.trim())
-                .filter(l => l.length > 1); // Ignore single chars like "y" or "."
-
-            if (lines.length === 0) return [];
-
-            // Map each line to a potential item
-            return lines.map(line => {
-                // Determine potential title (just the line itself)
-                const title = line;
-
-                return {
-                    id: Date.now().toString() + Math.random().toString(36).substr(2, 5),
-                    rawText: rawText,
-                    title: title,
-                    volume: '', // Manual entry required
-                    publisher: '', // Manual entry required
-                    suggestions: generateSuggestions(title)
-                };
-            });
-        }
-
-        // --- AI Suggestion Generation ---
-        function generateSuggestions(ocrTitle) {
-            ensureState();
-            const suggestions = [];
-            const lowerTitle = ocrTitle.toLowerCase();
-
-            // 1. Check correction dictionary
-            const corrections = JSON.parse(localStorage.getItem('manga_corrections') || '[]');
-            corrections.forEach(c => {
-                if (c.ocrText.toLowerCase() === lowerTitle || lowerTitle.includes(c.ocrText.toLowerCase())) {
-                    suggestions.push({ text: c.correctedText, source: 'history', score: c.count || 1 });
-                }
-            });
-
-            // 2. Match against existing items in library
-            const allItems = [...(window.state.unpurchased || []), ...(window.state.purchased || [])];
-            const seen = new Set(suggestions.map(s => s.text));
-
-            allItems.forEach(item => {
-                if (seen.has(item.title)) return;
-                const itemLower = item.title.toLowerCase();
-                // Fuzzy match: if OCR text contains part of existing title or vice versa
-                if (itemLower.includes(lowerTitle) || lowerTitle.includes(itemLower) ||
-                    levenshteinSimilar(lowerTitle, itemLower, 0.5)) {
-                    suggestions.push({ text: item.title, source: 'library', score: 0.5 });
-                    seen.add(item.title);
-                }
-            });
-
-            // Sort by score desc, limit to 5
-            suggestions.sort((a, b) => b.score - a.score);
-            return suggestions.slice(0, 5);
-        }
-
-        // Simple Levenshtein similarity check
-        function levenshteinSimilar(a, b, threshold) {
-            if (a.length === 0 || b.length === 0) return false;
-            const maxLen = Math.max(a.length, b.length);
-            if (maxLen > 30) return false; // Skip very long strings
-            const matrix = [];
-            for (let i = 0; i <= b.length; i++) matrix[i] = [i];
-            for (let j = 0; j <= a.length; j++) matrix[0][j] = j;
-            for (let i = 1; i <= b.length; i++) {
-                for (let j = 1; j <= a.length; j++) {
-                    matrix[i][j] = b[i - 1] === a[j - 1]
-                        ? matrix[i - 1][j - 1]
-                        : Math.min(matrix[i - 1][j - 1] + 1, matrix[i][j - 1] + 1, matrix[i - 1][j] + 1);
-                }
-            }
-            const dist = matrix[b.length][a.length];
-            return (1 - dist / maxLen) >= threshold;
-        }
-
-        // --- Render OCR Edit Screen ---
-        function renderOcrEditScreen() {
-            const list = document.getElementById('ocr-list');
-            if (!list) return;
-            list.innerHTML = '';
-            ensureState();
-
-            window.ocrPendingItems.forEach((item, index) => {
-                const card = document.createElement('div');
-                card.className = 'ocr-edit-card';
-                card.id = 'ocr-card-' + index;
-                card.style.cssText = 'background:white;border-radius:12px;padding:16px;margin:8px 16px;box-shadow:0 2px 8px rgba(0,0,0,0.1);';
-
-                // Suggestion chips HTML
-                let chipsHtml = '';
-                if (item.suggestions && item.suggestions.length > 0) {
-                    chipsHtml = '<div style="display:flex;gap:6px;overflow-x:auto;padding:4px 0;margin-top:4px;">';
-                    item.suggestions.forEach(s => {
-                        const icon = s.source === 'history' ? '🔄' : '📚';
-                        chipsHtml += `<button onclick="applyOcrSuggestion(${index}, '${s.text.replace(/'/g, "\\'")}')"
-                            style="flex-shrink:0;padding:6px 12px;border:1px solid var(--primary-color);background:#f3e8ff;color:var(--primary-color);border-radius:20px;font-size:12px;cursor:pointer;white-space:nowrap;">
-                            ${icon} ${s.text}
-                        </button>`;
+                    navigator.serviceWorker.register('./sw.js').then(reg => {
+                        reg.onupdatefound = () => {
+                            const installingWorker = reg.installing;
+                            installingWorker.onstatechange = () => {
+                                if (installingWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                                    window.location.reload();
+                                }
+                            };
+                        };
                     });
-                    chipsHtml += '</div>';
+                    navigator.serviceWorker.addEventListener('controllerchange', () => {
+                        window.location.reload();
+                    });
                 }
-
-                // Publisher options
-                const pubOptions = generatePublisherOptions(item.publisher);
-
-                card.innerHTML = `
-                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
-                        <span style="font-size:11px;color:#999;">OCR: ${item.rawText}</span>
-                        <button onclick="removeOcrItem(${index})" style="border:none;background:none;color:#ff5252;font-size:20px;cursor:pointer;padding:4px;">
-                            <span class="material-icons" style="font-size:20px;">delete</span>
-                        </button>
-                    </div>
-                    <div style="margin-bottom:8px;">
-                        <label style="font-size:12px;color:#666;">タイトル</label>
-                        <input type="text" id="ocr-title-${index}" value="${item.title}" class="text-input" style="font-size:16px;font-weight:bold;">
-                        ${chipsHtml}
-                    </div>
-                    <div style="display:flex;gap:12px;margin-bottom:8px;">
-                        <div style="flex:0 0 80px;">
-                            <label style="font-size:12px;color:#666;">巻数</label>
-                            <input type="number" id="ocr-vol-${index}" value="${item.volume}" class="text-input" style="text-align:center;">
-                        </div>
-                        <div style="flex:1;">
-                            <label style="font-size:12px;color:#666;">出版社</label>
-                            <select id="ocr-pub-${index}" class="text-input" onchange="checkPublisherSelect(this)">
-                                ${pubOptions}
-                            </select>
-                        </div>
-                    </div>
-                `;
-                list.appendChild(card);
-            });
-
-            if (window.ocrPendingItems.length === 0) {
-                list.innerHTML = '<div class="empty-state" style="padding:40px;">認識されたアイテムがありません</div>';
-            }
-        }
-
-        function applyOcrSuggestion(index, text) {
-            const input = document.getElementById('ocr-title-' + index);
-            if (input) input.value = text;
-        }
-        window.applyOcrSuggestion = applyOcrSuggestion;
-
-        function removeOcrItem(index) {
-            window.ocrPendingItems.splice(index, 1);
-            renderOcrEditScreen();
-        }
-        window.removeOcrItem = removeOcrItem;
-
-        // --- Register All OCR Items ---
-        function saveOcrResults() {
-            ensureState();
-            const corrections = JSON.parse(localStorage.getItem('manga_corrections') || '[]');
-            let count = 0;
-
-            window.ocrPendingItems.forEach((item, index) => {
-                const titleInput = document.getElementById('ocr-title-' + index);
-                const volInput = document.getElementById('ocr-vol-' + index);
-                const pubSelect = document.getElementById('ocr-pub-' + index);
-
-                const title = titleInput ? titleInput.value.trim() : item.title;
-                const volume = volInput ? volInput.value : item.volume;
-                let publisher = pubSelect ? pubSelect.value : item.publisher;
-                if (publisher === 'add-new' || !publisher) publisher = window.state.publishers[0]?.id || 'shueisha';
-
-                if (!title) return;
-
-                // Save correction if title was modified
-                if (title !== item.title && item.rawText) {
-                    const existing = corrections.find(c => c.ocrText === item.rawText);
-                    if (existing) {
-                        existing.correctedText = title;
-                        existing.count = (existing.count || 1) + 1;
-                    } else {
-                        corrections.push({ ocrText: item.rawText, correctedText: title, count: 1 });
-                    }
-                }
-
-                const newItem = {
-                    id: Date.now().toString() + '_' + index,
-                    title: title,
-                    volume: volume,
-                    publisher: publisher,
-                    status: 'unpurchased',
-                    updatedAt: Date.now()
-                };
-                window.state.unpurchased.unshift(newItem);
-                count++;
-            });
-
-            // Save correction dictionary
-            localStorage.setItem('manga_corrections', JSON.stringify(corrections));
-
-            saveStateLocal();
-            window.ocrPendingItems = [];
-            renderHomeLocal();
-            navigateToScreen('screen-home');
-            showToast(`${count}件のマンガを登録しました`);
-        }
-        window.saveOcrResults = saveOcrResults;
-
-        // --- Delete & Reason Functions ---
-        function deleteDetailItem() {
-            if (!window.currentDetailId) { alert('削除対象がありません'); return; }
-            if (!confirm('このアイテムを削除しますか？')) return;
-            ensureState();
-            var idx = window.state.unpurchased.findIndex(function (i) { return i.id === window.currentDetailId; });
-            if (idx > -1) {
-                window.state.unpurchased.splice(idx, 1);
-            } else {
-                idx = window.state.purchased.findIndex(function (i) { return i.id === window.currentDetailId; });
-                if (idx > -1) window.state.purchased.splice(idx, 1);
-            }
-            saveStateLocal();
-            renderHomeLocal();
-            closeDetailEdit();
-            showToast('削除しました');
-        }
-
-
-
-        // Attach ALL to window
-        window.openGallery = openGallery;
-        window.handleFileSelect = handleFileSelect;
-        window.takePicture = takePicture;
-        window.openCamera = openCamera;
-        window.closeCamera = closeCamera;
-        window.deleteDetailItem = deleteDetailItem;
-        window.deleteDetailItem = deleteDetailItem;
-
-        // --- OCR Edit Screen Button Handlers ---
-        window.addEventListener('load', function () {
-            const btnCancelEdit = document.getElementById('btn-cancel-edit');
-            if (btnCancelEdit) {
-                btnCancelEdit.onclick = function () {
-                    window.ocrPendingItems = [];
-                    navigateToScreen('screen-home');
-                };
-            }
-            const btnSaveEdit = document.getElementById('btn-save-edit');
-            if (btnSaveEdit) {
-                btnSaveEdit.onclick = function () {
-                    saveOcrResults();
-                };
-            }
-        });
-
-        // Service Worker Update Logic
-        if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('./sw.js').then(reg => {
-                reg.onupdatefound = () => {
-                    const installingWorker = reg.installing;
-                    installingWorker.onstatechange = () => {
-                        if (installingWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                            window.location.reload();
+                // FORCE UNREGISTER SERVICE WORKER to fix caching issues
+                if ('serviceWorker' in navigator) {
+                    navigator.serviceWorker.getRegistrations().then(function (registrations) {
+                        for (let registration of registrations) {
+                            console.log('Unregistering SW:', registration);
+                            registration.unregister();
                         }
-                    };
-                };
-            });
-            navigator.serviceWorker.addEventListener('controllerchange', () => {
-                window.location.reload();
-            });
-        }
-        // FORCE UNREGISTER SERVICE WORKER to fix caching issues
-        if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.getRegistrations().then(function (registrations) {
-                for (let registration of registrations) {
-                    console.log('Unregistering SW:', registration);
-                    registration.unregister();
+                    });
                 }
-            });
-        }
     </script>
 
 <body>
@@ -1323,57 +929,14 @@
                 </div>
 
                 <button id="fab-add-manual" class="fab"
-                    style="left: 24px; right: auto; background-color: white; color: var(--primary-color);"
+                    style="left: auto; right: 24px; background-color: var(--primary-color); color: white;"
                     onclick="openManualAdd()">
-                    <span class="material-icons">edit</span>
-                </button>
-
-                <button id="fab-camera" class="fab" onclick="openCamera()">
-                    <span class="material-icons">camera_alt</span>
+                    <span class="material-icons">add</span>
                 </button>
             </section>
 
-            <!-- 2. Camera Screen -->
-            <section id="screen-camera" class="screen">
-                <div class="camera-view">
-                    <!-- Video for Real Camera -->
-                    <video id="camera-feed" autoplay playsinline
-                        style="position: absolute; width: 100%; height: 100%; object-fit: cover;"></video>
-
-                    <div class="camera-overlay">
-                        <div class="guide-frame"></div>
-                    </div>
-                </div>
-                <div class="camera-controls">
-                    <button id="btn-gallery" class="icon-btn" onclick="openGallery()">
-                        <span class="material-icons">photo_library</span>
-                    </button>
-                    <button id="btn-shutter" class="shutter-btn" onclick="takePicture()"></button>
-                    <button id="btn-close-camera" class="icon-btn" onclick="closeCamera()">
-                        <span class="material-icons">close</span>
-                    </button>
-                </div>
-            </section>
-
-            <!-- 3. OCR Edit Screen -->
-            <section id="screen-edit" class="screen">
-                <div class="edit-header-controls"
-                    style="padding: 0 16px; height: 56px; display: flex; align-items: center; justify-content: space-between; background: var(--primary-color); color: white; position: sticky; top: 0; z-index: 10;">
-                    <button id="btn-cancel-edit" class="icon-btn">
-                        <span class="material-icons">close</span>
-                    </button>
-                    <span style="font-size: 20px; font-weight: 500;">読取結果確認</span>
-                    <button id="btn-save-edit" class="icon-btn">
-                        <span class="material-icons">check</span>
-                    </button>
-                </div>
-                <div id="ocr-list" class="edit-list">
-                    <!-- Editable Cards w/ AI suggestions injected here -->
-                </div>
-            </section>
-
-            <!-- 4. Detail Edit Screen (Single Item) -->
-            <section id="screen-detail-edit" class="screen">
+            <!-- 2. Manual Add/Edit Screen -->
+            <section id="screen-add" class="screen">
                 <div class="edit-container">
                     <div class="input-group">
                         <label class="input-label">タイトル</label>
@@ -1439,7 +1002,7 @@
         <!-- Modal: Settings -->
         <div id="modal-settings" class="modal hidden">
             <div class="modal-content">
-                <h3>設定 <span style="font-size:12px; color:red;">v42</span></h3>
+                <h3>設定 <span style="font-size:12px; color:red;">v43</span></h3>
 
                 <div class="input-group">
                     <label class="input-label">購入済みデータの自動削除</label>
