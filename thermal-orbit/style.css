@@ -1,18 +1,19 @@
 :root {
-    --primary-color: #5d4037;
-    /* Wood Brown */
-    --accent-color: #8d6e63;
-    /* Lighter Wood */
-    --bg-color: #eefebe;
-    /* Cream/Paper bg */
-    --shelf-color: #4e342e;
-    /* Dark Shelf */
-    --card-bg: #fffbf0;
-    /* Paper-ish */
-    --text-color: #3e2723;
-    --subtext-color: #5d4037;
-    --border-color: #d7ccc8;
-    --danger-color: #c62828;
+    --primary-color: #8d6e63;
+    /* Light Oak */
+    --accent-color: #d7ccc8;
+    /* Pale Wood */
+    --bg-color: #fffaf0;
+    /* Warm White Paper */
+    --shelf-color: #8d6e63;
+    /* Oak Shelf */
+    --card-bg: #ffffff;
+    /* Clean White */
+    --text-color: #4e342e;
+    /* Dark Brown Text */
+    --subtext-color: #8d6e63;
+    --border-color: #efebe9;
+    --danger-color: #e57373;
 }
 
 * {
@@ -23,19 +24,19 @@
 }
 
 body {
-    background-color: #3e2723;
-    /* Dark wood surrounding */
+    background-color: #efebe9;
+    /* Light Stone/Wood surrounding */
     color: var(--text-color);
     height: 100vh;
     overflow: hidden;
 }
 
-/* Wood Texture Mixin */
+/* Wood Texture Mixin - Lighter */
 .wood-texture {
-    background-color: #6d4c41;
+    background-color: #a1887f;
     background-image:
-        repeating-linear-gradient(90deg, transparent 0%, transparent 2%, rgba(0, 0, 0, 0.1) 3%, transparent 4%),
-        repeating-linear-gradient(92deg, transparent 0%, transparent 4%, rgba(255, 255, 255, 0.05) 5%, transparent 6%);
+        repeating-linear-gradient(90deg, transparent 0%, transparent 2%, rgba(255, 255, 255, 0.1) 3%, transparent 4%),
+        repeating-linear-gradient(92deg, transparent 0%, transparent 4%, rgba(0, 0, 0, 0.02) 5%, transparent 6%);
 }
 
 #app {
@@ -46,46 +47,45 @@ body {
     max-width: 480px;
     margin: 0 auto;
     background-color: var(--bg-color);
-    box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
-    /* Complex Shelf Background: Cream wall + Wood shelves */
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+    /* Complex Shelf Background: Lighter */
     background-image:
-        /* Shadow under shelf */
-        linear-gradient(to bottom, transparent 130px, rgba(0, 0, 0, 0.3) 130px, transparent 136px),
-        /* Wood Shelf texture (horizontal stripes) */
+        /* Shadow under shelf - slightly softer */
+        linear-gradient(to bottom, transparent 130px, rgba(0, 0, 0, 0.1) 130px, transparent 136px),
+        /* Wood Shelf texture */
         repeating-linear-gradient(to bottom,
             transparent,
             transparent 119px,
-            #5d4037 119px,
-            #4e342e 130px
-            /* Shelf thickness */
+            #a1887f 119px,
+            /* Top of shelf */
+            #8d6e63 130px
+            /* Shelf face */
         ),
-        /* Wood grain on the shelves (vertical accents restricted to shelf height? Hard in one gradient) */
-        /* Let's keep it simple: just the color bands define the shelf, but we add a noise texture over everything? No. */
         /* Wall pattern */
         repeating-linear-gradient(to right, rgba(0, 0, 0, 0.01) 0, rgba(0, 0, 0, 0.01) 1px, transparent 1px, transparent 20px);
     background-size: 100% 130px;
-    /* Repeats every 130px vertical */
 }
 
 /* Header */
 header {
     height: 56px;
-    background-color: #5d4037;
-    /* Wood Grain Effect */
+    background-color: #8d6e63;
+    /* Light Oak */
+    /* Light Wood Grain Effect */
     background-image:
-        repeating-linear-gradient(90deg, transparent 0%, transparent 2%, rgba(0, 0, 0, 0.2) 3%, transparent 5%),
-        repeating-linear-gradient(91deg, transparent 0%, transparent 4%, rgba(255, 255, 255, 0.05) 5%, transparent 8%),
-        linear-gradient(to bottom, rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.3));
-    /* Vignette */
+        repeating-linear-gradient(90deg, transparent 0%, transparent 2%, rgba(255, 255, 255, 0.1) 3%, transparent 5%),
+        repeating-linear-gradient(91deg, transparent 0%, transparent 4%, rgba(0, 0, 0, 0.05) 5%, transparent 8%),
+        linear-gradient(to bottom, rgba(255, 255, 255, 0.1), rgba(0, 0, 0, 0.05));
     color: white;
     display: flex;
     align-items: center;
     justify-content: space-between;
     padding: 0 16px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
     z-index: 10;
-    border-bottom: 4px solid #3e2723;
-    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+    border-bottom: 4px solid #5d4037;
+    /* Darker edge */
+    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.2);
 }
 
 h1 {
@@ -129,12 +129,12 @@ main {
 /* Tabs */
 .tabs {
     display: flex;
-    background-color: #4e342e;
-    /* Darker Wood */
+    background-color: #795548;
+    /* Med Light Wood */
     background-image:
-        repeating-linear-gradient(90deg, transparent 0%, transparent 3%, rgba(0, 0, 0, 0.15) 4%, transparent 6%);
-    color: rgba(255, 255, 255, 0.7);
-    box-shadow: inset 0 -4px 4px rgba(0, 0, 0, 0.2);
+        repeating-linear-gradient(90deg, transparent 0%, transparent 3%, rgba(255, 255, 255, 0.1) 4%, transparent 6%);
+    color: rgba(255, 255, 255, 0.9);
+    box-shadow: inset 0 -4px 4px rgba(0, 0, 0, 0.1);
 }
 
 .tab {
@@ -147,13 +147,13 @@ main {
     border-bottom: 2px solid transparent;
     cursor: pointer;
     font-weight: 500;
-    text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.3);
+    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.2);
 }
 
 .tab.active {
     color: white;
-    border-bottom-color: var(--accent-color);
-    background-color: rgba(255, 255, 255, 0.05);
+    border-bottom-color: #d7ccc8;
+    background-color: rgba(255, 255, 255, 0.1);
 }
 
 /* Lists */
@@ -178,19 +178,19 @@ main {
     margin-bottom: 24px;
     /* Space for shelf */
     box-shadow:
-        3px 3px 5px rgba(0, 0, 0, 0.2),
-        /* Drop shadow */
-        inset 5px 0 10px rgba(0, 0, 0, 0.05);
+        2px 4px 6px rgba(0, 0, 0, 0.1),
+        /* Softer Drop shadow */
+        inset 4px 0 8px rgba(0, 0, 0, 0.03);
     /* Spine depth */
     display: flex;
     align-items: center;
     justify-content: space-between;
-    border-left: 6px solid #8d6e63;
-    /* Default spine color, overridden by JS */
-    border-right: 2px solid #ddd;
+    border-left: 6px solid #a1887f;
+    /* Lighter Spine */
+    border-right: 2px solid #eee;
     /* Page edges */
     position: relative;
-    background-image: linear-gradient(to right, rgba(0, 0, 0, 0.02) 0%, transparent 5%, transparent 95%, rgba(0, 0, 0, 0.05) 100%);
+    background-image: linear-gradient(to right, rgba(0, 0, 0, 0.01) 0%, transparent 5%, transparent 95%, rgba(0, 0, 0, 0.03) 100%);
 }
 
 .card-info {
@@ -201,6 +201,7 @@ main {
     font-size: 16px;
     font-weight: bold;
     margin-bottom: 4px;
+    color: #5d4037;
 }
 
 .publisher-icon {
