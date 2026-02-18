@@ -1,9 +1,18 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-  <rect width="512" height="512" rx="100" fill="#6200ee"/>
-  <!-- Book Shape -->
-  <path d="M140 130 h232 c10 0 20 10 20 20 v232 c0 10 -10 20 -20 20 h-232 c-10 0 -20 -10 -20 -20 v-232 c0 -10 10 -20 20 -20 z" fill="white"/>
-  <!-- Checkmark -->
-  <path d="M200 256 l40 40 l80 -80" fill="none" stroke="#6200ee" stroke-width="30" stroke-linecap="round" stroke-linejoin="round"/>
-  <!-- Spine/Detail -->
-  <rect x="120" y="130" width="20" height="272" fill="#4d00d2" rx="5"/>
+  <defs>
+    <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#6200ee;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#3700b3;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="100" fill="url(#grad1)" />
+  <!-- Book Icon -->
+  <path d="M140 100 A 40 40 0 0 0 100 140 L 100 372 A 40 40 0 0 0 140 412 L 360 412 A 20 20 0 0 0 380 392 L 380 120 A 20 20 0 0 0 360 100 Z" fill="white" />
+  <path d="M380 392 L 380 412 A 20 20 0 0 1 360 432 L 140 432 A 40 40 0 0 1 100 392 L 100 372 A 40 40 0 0 0 140 412 L 360 412 A 20 20 0 0 0 380 392" fill="#ddd" />
+  <!-- Book Details -->
+  <rect x="150" y="160" width="180" height="20" rx="5" fill="#e0e0e0" />
+  <rect x="150" y="210" width="180" height="20" rx="5" fill="#e0e0e0" />
+  <rect x="150" y="260" width="130" height="20" rx="5" fill="#e0e0e0" />
+  <!-- Bookmark -->
+  <path d="M300 100 L 300 250 L 330 220 L 360 250 L 360 100 Z" fill="#03dac6" />
 </svg>
