@@ -19,8 +19,7 @@
     box-sizing: border-box;
     margin: 0;
     padding: 0;
-    font-family: 'Hiragino Mincho ProN', 'Yu Mincho', serif;
-    /* Serif for book feel */
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Hiragino Kaku Gothic ProN", "Yu Gothic", Meiryo, sans-serif;
 }
 
 body {
@@ -29,6 +28,14 @@ body {
     color: var(--text-color);
     height: 100vh;
     overflow: hidden;
+}
+
+/* Wood Texture Mixin */
+.wood-texture {
+    background-color: #6d4c41;
+    background-image:
+        repeating-linear-gradient(90deg, transparent 0%, transparent 2%, rgba(0, 0, 0, 0.1) 3%, transparent 4%),
+        repeating-linear-gradient(92deg, transparent 0%, transparent 4%, rgba(255, 255, 255, 0.05) 5%, transparent 6%);
 }
 
 #app {
@@ -40,21 +47,36 @@ body {
     margin: 0 auto;
     background-color: var(--bg-color);
     box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
-    background-image: repeating-linear-gradient(transparent,
+    /* Complex Shelf Background: Cream wall + Wood shelves */
+    background-image:
+        /* Shadow under shelf */
+        linear-gradient(to bottom, transparent 130px, rgba(0, 0, 0, 0.3) 130px, transparent 136px),
+        /* Wood Shelf texture (horizontal stripes) */
+        repeating-linear-gradient(to bottom,
+            transparent,
             transparent 119px,
-            var(--shelf-color) 119px,
-            var(--shelf-color) 130px,
-            #3e2723 130px,
-            #3e2723 132px);
-    /* Simple Shelf Lines */
+            #5d4037 119px,
+            #4e342e 130px
+            /* Shelf thickness */
+        ),
+        /* Wood grain on the shelves (vertical accents restricted to shelf height? Hard in one gradient) */
+        /* Let's keep it simple: just the color bands define the shelf, but we add a noise texture over everything? No. */
+        /* Wall pattern */
+        repeating-linear-gradient(to right, rgba(0, 0, 0, 0.01) 0, rgba(0, 0, 0, 0.01) 1px, transparent 1px, transparent 20px);
+    background-size: 100% 130px;
+    /* Repeats every 130px vertical */
 }
 
 /* Header */
 header {
     height: 56px;
-    background-color: var(--primary-color);
-    background-image: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0IiBoZWlnaHQ9IjQiPgo8cmVjdCB3aWR0aD0iNCIgaGVpZ2h0PSI0IiBmaWxsPSIjNWQ0MDM3Ii8+CjxyZWN0IHdpZHRoPSIxIiBoZWlnaHQ9IjEiIGZpbGw9IiM2ZDREMzciLz4KPC9zdmc+');
-    /* Subtle texture */
+    background-color: #5d4037;
+    /* Wood Grain Effect */
+    background-image:
+        repeating-linear-gradient(90deg, transparent 0%, transparent 2%, rgba(0, 0, 0, 0.2) 3%, transparent 5%),
+        repeating-linear-gradient(91deg, transparent 0%, transparent 4%, rgba(255, 255, 255, 0.05) 5%, transparent 8%),
+        linear-gradient(to bottom, rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.3));
+    /* Vignette */
     color: white;
     display: flex;
     align-items: center;
@@ -63,6 +85,7 @@ header {
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
     z-index: 10;
     border-bottom: 4px solid #3e2723;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
 }
 
 h1 {
@@ -106,8 +129,12 @@ main {
 /* Tabs */
 .tabs {
     display: flex;
-    background-color: var(--primary-color);
+    background-color: #4e342e;
+    /* Darker Wood */
+    background-image:
+        repeating-linear-gradient(90deg, transparent 0%, transparent 3%, rgba(0, 0, 0, 0.15) 4%, transparent 6%);
     color: rgba(255, 255, 255, 0.7);
+    box-shadow: inset 0 -4px 4px rgba(0, 0, 0, 0.2);
 }
 
 .tab {
@@ -120,11 +147,13 @@ main {
     border-bottom: 2px solid transparent;
     cursor: pointer;
     font-weight: 500;
+    text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.3);
 }
 
 .tab.active {
     color: white;
     border-bottom-color: var(--accent-color);
+    background-color: rgba(255, 255, 255, 0.05);
 }
 
 /* Lists */
@@ -260,10 +289,13 @@ main {
     width: 56px;
     height: 56px;
     border-radius: 50%;
-    background-color: var(--accent-color);
-    color: black;
-    border: none;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+    background-color: #8d6e63;
+    background-image:
+        radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.2), transparent),
+        repeating-linear-gradient(45deg, transparent 0%, transparent 2%, rgba(0, 0, 0, 0.1) 3%, transparent 5%);
+    color: white;
+    border: 2px solid #5d4037;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
     display: flex;
     align-items: center;
     justify-content: center;
